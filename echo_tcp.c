@@ -7,13 +7,13 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "ustream.h"
+//#include "ustream.h"
 #include "uloop.h"
 #include "usock.h"
 
 static struct uloop_fd server;
 static const char *port = "10000";
-struct client *next_client = NULL;
+/*struct client *next_client = NULL;
 
 struct client {
 	struct sockaddr_in sin;
@@ -80,31 +80,41 @@ static void client_notify_state(struct ustream *s)
 	if (!s->w.data_bytes)
 		return client_close(s);
 
-}
+}*/
 
 static void server_cb(struct uloop_fd *fd, unsigned int events)
 {
-	struct client *cl;
+	//struct client *cl;
 	unsigned int sl = sizeof(struct sockaddr_in);
-	int sfd;
+	int sfd, n;
+	
+	struct sockaddr_in client_addr;
+	char buffer[256];
 
-	if (!next_client)
+	/*if (!next_client)
 		next_client = calloc(1, sizeof(*next_client));
 
-	cl = next_client;
-	sfd = accept(server.fd, (struct sockaddr *) &cl->sin, &sl);
+	cl = next_client;*/
+	sfd = accept(server.fd, (struct sockaddr *) &client_addr, &sl);
 	if (sfd < 0) {
 		fprintf(stderr, "Accept failed\n");
 		return;
 	}
 
-	cl->s.stream.string_data = true;
+	/*cl->s.stream.string_data = true;
 	cl->s.stream.notify_read = client_read_cb;
 	cl->s.stream.notify_state = client_notify_state;
 	cl->s.stream.notify_write = client_notify_write;
 	ustream_fd_init(&cl->s, sfd);
 	next_client = NULL;
-	fprintf(stderr, "New connection\n");
+	fprintf(stderr, "New connection\n");*/
+	
+	n = read( sfd, buffer, 255);
+	if (n < 0) perror("Error reading from socket");
+	printf("Message: %s\n", buffer);
+	n = write( sfd, buffer, n);
+	if (n < 0) perror("Error writing to socket");
+	close(sfd);
 }
 
 static int run_server(void)
