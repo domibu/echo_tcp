@@ -112,10 +112,13 @@ static void server_cb(struct uloop_fd *fd, unsigned int events)
 	
 	n = read( sfd, buffer, 255);
 	if (n < 0) perror("Error reading from socket");
-	ip = inet_ntoa(client_addr.sin_addr);
-	printf("IP: %s	Message: %s\n", ip, buffer);
-	n = write( sfd, buffer, n);
-	if (n < 0) perror("Error writing to socket");
+	else 
+	{
+		ip = inet_ntoa(client_addr.sin_addr);
+		printf("IP: %s	Message: %s\n", ip, buffer);
+		n = write( sfd, buffer, n);
+		if (n < 0) perror("Error writing to socket");
+	}
 	close(sfd);
 }
 
