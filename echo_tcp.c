@@ -1,5 +1,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <stdio.h>
 #include <getopt.h>
@@ -89,7 +90,7 @@ static void server_cb(struct uloop_fd *fd, unsigned int events)
 	int sfd, n;
 	
 	struct sockaddr_in client_addr;
-	char buffer[256];
+	char buffer[256], *ip;
 
 	/*if (!next_client)
 		next_client = calloc(1, sizeof(*next_client));
@@ -111,7 +112,8 @@ static void server_cb(struct uloop_fd *fd, unsigned int events)
 	
 	n = read( sfd, buffer, 255);
 	if (n < 0) perror("Error reading from socket");
-	printf("Message: %s\n", buffer);
+	ip = inet_ntoa(client_addr.sin_addr);
+	printf("IP: %s	Message: %s\n", ip, buffer);
 	n = write( sfd, buffer, n);
 	if (n < 0) perror("Error writing to socket");
 	close(sfd);
