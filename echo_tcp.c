@@ -50,43 +50,35 @@ static void server_cb(struct uloop_fd *fd, unsigned int events)
 	struct sockaddr_in client_addr;
 	
 	for (;;) {
-	pid = getpid();
-	ppid = getppid();
-
-	sfd = accept(server.fd, (struct sockaddr *) &client_addr, &sl);
-	if (sfd < 0) {
-		return;
-	}
+		pid = getpid();
+		ppid = getppid();
+	
+		sfd = accept(server.fd, (struct sockaddr *) &client_addr, &sl);
+		if (sfd < 0) {
+			return;
+		}
 
 	
-	fprintf(stderr, "New conn PID: %d PPID: %d\n", pid, ppid);
-	struct uloop_process *uproc = calloc(1, sizeof(*uproc));
-	if ( !uproc || (uproc->pid = fork()) == -1) {
-		free(uproc);
-		close(sfd);	
-	}
-	if (uproc->pid != 0) {
-		//parent
-		uproc->cb = child_end; // handle za zavrsetak child, za sada
-		uloop_process_add(uproc);
-		close(sfd);
-	}
-	else {	//child do stuff
-		ret = child_dostuff(sfd, client_addr);
-		close(sfd);
-		exit(ret);
-	}
+		fprintf(stderr, "New conn PID: %d PPID: %d\n", pid, ppid);
+		struct uloop_process *uproc = calloc(1, sizeof(*uproc));
+		if ( !uproc || (uproc->pid = fork()) == -1) {
+			free(uproc);
+			close(sfd);	
+		}
+		if (uproc->pid != 0) {
+			//parent
+			uproc->cb = child_end;
+			uloop_process_add(uproc);
+			close(sfd);
+		}
+		else {	//child do stuff
+			ret = child_dostuff(sfd, client_addr);
+			close(sfd);
+			exit(ret);
+		}
 	}
 }
 
-/*static int close_server(void)
-{
-	struct uloop_process *p, *tmp;
-	list_for_each_entry_safe(p, tmp, &childs, list)	{
-		fprintf(stderr, "pid: %d\n", p->pid);
-	}
-	return 0;
-}*/
 
 static int run_server(void)
 {
@@ -106,7 +98,6 @@ static int run_server(void)
 	uloop_fd_add(&server, ULOOP_READ);
 	uloop_run();
 	
-//	close_server();
 	uloop_done();
 	return 0;
 }
